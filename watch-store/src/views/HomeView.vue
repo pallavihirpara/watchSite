@@ -94,10 +94,6 @@
         </div>
       </div>
 
-      <div class="scroll-hint">
-        <div class="scroll-line"></div>
-        <span>Scroll to explore</span>
-      </div>
     </section>
 
     <!-- Categories Scroll -->
