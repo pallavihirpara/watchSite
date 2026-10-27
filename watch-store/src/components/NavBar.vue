@@ -13,7 +13,6 @@
         </div>
         <router-link to="/shop" class="nav-link">New Arrivals</router-link>
         <router-link to="/offers" class="nav-link nav-offer">Offers</router-link>
-        <router-link to="/admin" class="nav-link nav-admin-pill" id="navbar-admin-link">Admin Panel</router-link>
       </nav>
 
       <!-- Right Icons -->
@@ -66,7 +65,6 @@
               </div>
             </div>
             <router-link to="/checkout" class="ud-link" @click="userMenuOpen = false" id="navbar-goto-checkout-link">🛒 Go to Checkout</router-link>
-            <router-link to="/admin" class="ud-link" @click="userMenuOpen = false" id="navbar-goto-admin-link">⚙️ Admin Panel</router-link>
             <button class="ud-link ud-logout" @click="logout" id="navbar-logout-btn">🚪 Sign Out</button>
           </div>
         </div>
@@ -100,7 +98,6 @@
         </router-link>
         <router-link to="/shop" class="mobile-link" @click="mobileMenuOpen = false">New Arrivals</router-link>
         <router-link to="/offers" class="mobile-link mobile-offer" @click="mobileMenuOpen = false">🏷️ Offers</router-link>
-        <router-link to="/admin" class="mobile-link mobile-offer" @click="mobileMenuOpen = false">⚙️ Admin Panel</router-link>
       </div>
     </transition>
   </header>

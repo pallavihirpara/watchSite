@@ -23,9 +23,13 @@
               <p class="item-price" v-if="!store.hidePrice && item.price > 0">₹{{ (item.price * item.qty).toLocaleString() }}</p>
               <p class="item-price item-price-request" v-else>✨ Price on Request</p>
               <div class="qty-controls">
-                <button @click="store.updateQty(item.id, item.qty - 1)" id="cart-qty-minus">−</button>
-                <span>{{ item.qty }}</span>
-                <button @click="store.updateQty(item.id, item.qty + 1)" id="cart-qty-plus">+</button>
+                <button type="button" @click="store.updateQty(item.id, item.qty - 1)" id="cart-qty-minus" aria-label="Decrease quantity">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+                <span class="qty-num">{{ item.qty }}</span>
+                <button type="button" @click="store.updateQty(item.id, item.qty + 1)" id="cart-qty-plus" aria-label="Increase quantity">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
               </div>
             </div>
             <button class="remove-btn" @click="store.removeFromCart(item.id)" id="cart-remove-btn" aria-label="Remove">
@@ -208,22 +212,43 @@ const handleCheckout = () => {
   gap: 0.5rem;
 }
 .qty-controls button {
-  width: 28px; height: 28px;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0 !important;
+  margin: 0;
   border: 1px solid #e0d5c0;
   background: #faf8f4;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 1rem;
   color: #444;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  line-height: 1;
+  transition: all 0.2s ease;
 }
-.qty-controls button:hover { border-color: #C9A84C; color: #C9A84C; }
-.qty-controls span {
+.qty-controls button svg {
+  display: block;
+  pointer-events: none;
+}
+.qty-controls button:hover {
+  border-color: #C9A84C;
+  color: #C9A84C;
+  background: #ffffff;
+}
+.qty-controls .qty-num {
   font-family: 'Jost', sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 500;
   min-width: 20px;
   text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 .remove-btn {
   position: absolute;

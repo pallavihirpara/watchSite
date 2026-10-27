@@ -41,27 +41,27 @@
             <div class="form-grid">
               <div class="form-group full">
                 <label for="addr-name">Full Name *</label>
-                <input id="addr-name" v-model="form.name" type="text" placeholder="Jane Doe" required />
+                <input id="addr-name" v-model="form.name" type="text" placeholder="Enter your full name" required />
               </div>
               <div class="form-group">
                 <label for="addr-phone">Phone *</label>
-                <input id="addr-phone" v-model="form.phone" type="tel" placeholder="+91 98765 43210" required />
+                <input id="addr-phone" v-model="form.phone" type="tel" placeholder="Enter 10-digit mobile number" required />
               </div>
               <div class="form-group">
                 <label for="addr-email">Email *</label>
-                <input id="addr-email" v-model="form.email" type="email" placeholder="you@example.com" required />
+                <input id="addr-email" v-model="form.email" type="email" placeholder="Enter your email address" required />
               </div>
               <div class="form-group full">
                 <label for="addr-line1">Address Line 1 *</label>
-                <input id="addr-line1" v-model="form.address1" type="text" placeholder="Flat / House No, Street" required />
+                <input id="addr-line1" v-model="form.address1" type="text" placeholder="Flat, House no., Building, Street" required />
               </div>
               <div class="form-group full">
                 <label for="addr-line2">Address Line 2</label>
-                <input id="addr-line2" v-model="form.address2" type="text" placeholder="Area, Landmark (optional)" />
+                <input id="addr-line2" v-model="form.address2" type="text" placeholder="Area, Colony, Landmark (optional)" />
               </div>
               <div class="form-group">
                 <label for="addr-city">City *</label>
-                <input id="addr-city" v-model="form.city" type="text" placeholder="Mumbai" required />
+                <input id="addr-city" v-model="form.city" type="text" placeholder="Enter city" required />
               </div>
               <div class="form-group">
                 <label for="addr-state">State *</label>
@@ -72,7 +72,7 @@
               </div>
               <div class="form-group">
                 <label for="addr-pin">PIN Code *</label>
-                <input id="addr-pin" v-model="form.pin" type="text" placeholder="400001" required maxlength="6" pattern="[0-9]{6}" />
+                <input id="addr-pin" v-model="form.pin" type="text" placeholder="Enter 6-digit PIN code" required maxlength="6" pattern="[0-9]{6}" />
               </div>
               <div class="form-group">
                 <label for="addr-country">Country</label>
@@ -97,7 +97,7 @@
                 <input type="radio" id="del-express" name="delivery" value="express" v-model="form.delivery" />
                 <div class="del-info">
                   <strong>Express Delivery</strong>
-                  <span>1–2 Business Days</span>
+                  <span>1–2 Business Days (Fast Delivery)</span>
                 </div>
                 <span class="del-price">₹199</span>
               </label>
@@ -109,11 +109,16 @@
             <h3><span class="section-num">🎁</span> Gift Options</h3>
             <label class="gift-toggle" for="gift-check">
               <input type="checkbox" id="gift-check" v-model="form.isGift" />
-              <span>Send as a Gift (complimentary wrapping + personalised note)</span>
+              <span>Send as a Gift (complimentary luxury gift wrapping + personalised card)</span>
             </label>
             <div class="gift-message-wrap" v-if="form.isGift">
-              <label for="gift-msg">Personal Message</label>
-              <textarea id="gift-msg" v-model="form.giftMessage" placeholder="Write your heartfelt message here..." rows="3"></textarea>
+              <label for="gift-msg">Personalised Gift Message / Note</label>
+              <textarea
+                id="gift-msg"
+                v-model="form.giftMessage"
+                placeholder="Enter your personalised gift message for the recipient..."
+                rows="4"
+              ></textarea>
             </div>
           </div>
 
@@ -147,9 +152,9 @@
             <span>Delivery</span>
             <span>{{ form.delivery === 'express' ? '₹199' : 'FREE' }}</span>
           </div>
-          <div class="total-row discount" v-if="store.cartTotal >= 10000">
-            <span>Loyalty Discount (5%)</span>
-            <span>−₹{{ Math.round(store.cartTotal * 0.05).toLocaleString() }}</span>
+          <div class="total-row discount" v-if="promoApplied && promoDiscount > 0">
+            <span>Coupon Discount</span>
+            <span>−₹{{ promoDiscount.toLocaleString() }}</span>
           </div>
           <div class="total-row grand">
             <strong>Total</strong>
@@ -160,10 +165,10 @@
         <!-- Promo Code -->
         <div class="promo-section">
           <div class="promo-input-wrap">
-            <input v-model="promoCode" type="text" placeholder="Promo code" id="checkout-promo-input" />
+            <input v-model="promoCode" type="text" placeholder="Enter coupon code (e.g. LUXORIA10)" id="checkout-promo-input" />
             <button type="button" @click="applyPromo" id="checkout-promo-apply-btn">Apply</button>
           </div>
-          <p class="promo-success" v-if="promoApplied">✓ Promo code applied!</p>
+          <p class="promo-success" v-if="promoApplied">✓ Promo code applied (10% off)!</p>
           <p class="promo-error" v-if="promoError">{{ promoError }}</p>
         </div>
 
@@ -173,10 +178,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { store } from '../store'
 import { authStore } from '../store/auth'
+import { products as fallbackProducts } from '../data/products'
 
 const router = useRouter()
 const promoCode = ref('')
@@ -193,6 +199,16 @@ const form = ref({
   giftMessage: ''
 })
 
+// Auto-fill user information when user logs in or completes signup on this page
+watch(() => authStore.currentUser, (user) => {
+  if (user) {
+    if (!form.value.name) form.value.name = user.name || ''
+    if (!form.value.email) form.value.email = user.email || ''
+    if (!form.value.phone) form.value.phone = user.phone || ''
+    store.assignCartToUser(user.id)
+  }
+}, { immediate: true })
+
 const states = [
   'Andhra Pradesh', 'Delhi', 'Goa', 'Gujarat', 'Karnataka',
   'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Punjab',
@@ -200,12 +216,43 @@ const states = [
 ]
 
 const deliveryCharge = computed(() => form.value.delivery === 'express' ? 199 : 0)
-const loyaltyDiscount = computed(() => store.cartTotal >= 10000 ? Math.round(store.cartTotal * 0.05) : 0)
-const totalAmount = computed(() => store.cartTotal + deliveryCharge.value - loyaltyDiscount.value)
+const promoDiscount = computed(() => promoApplied.value ? Math.round(store.cartTotal * 0.10) : 0)
+const totalAmount = computed(() => Math.max(0, store.cartTotal + deliveryCharge.value - promoDiscount.value))
 
 onMounted(() => {
-  if (!authStore.currentUser) router.push('/')
-  if (store.cart.length === 0) router.push('/')
+  if (!authStore.currentUser) {
+    // Keep user on this page and prompt login/signup modal directly
+    authStore.openAuthModal('/checkout', 'Sign in or create an account to complete your order')
+  } else {
+    store.assignCartToUser(authStore.currentUser.id)
+  }
+
+  // Restore cart items from localStorage if empty
+  if (store.cart.length === 0) {
+    try {
+      const saved = JSON.parse(localStorage.getItem('luxoria_cart') || '[]')
+      if (Array.isArray(saved) && saved.length > 0) {
+        store.cart = saved
+      } else {
+        router.push('/shop')
+      }
+    } catch {
+      router.push('/shop')
+    }
+  }
+
+  // Repair any existing cart items that had 0 or missing prices
+  if (store.cart && store.cart.length > 0) {
+    store.cart.forEach(item => {
+      if (!item.price || Number(item.price) <= 0) {
+        const prod = fallbackProducts.find(p => Number(p.id) === Number(item.id))
+        if (prod && Number(prod.price) > 0) item.price = Number(prod.price)
+      }
+    })
+    try {
+      localStorage.setItem('luxoria_cart', JSON.stringify(store.cart))
+    } catch {}
+  }
 })
 
 const applyPromo = () => {
@@ -221,11 +268,17 @@ const applyPromo = () => {
 }
 
 const proceedToPayment = () => {
-  // Save order details to session
+  if (!authStore.currentUser) {
+    authStore.openAuthModal('/checkout', 'Sign in or create an account to proceed to payment')
+    return
+  }
+  // Assign cart to current user and save to session for payment processing
+  store.assignCartToUser(authStore.currentUser.id)
   sessionStorage.setItem('luxoria_checkout', JSON.stringify({
     address: form.value,
     total: totalAmount.value,
-    items: store.cart
+    items: store.cart,
+    user: authStore.currentUser
   }))
   router.push('/payment')
 }
@@ -412,6 +465,12 @@ const proceedToPayment = () => {
   margin-bottom: 1rem;
 }
 .gift-toggle input { accent-color: #C9A84C; width: 16px; height: 16px; }
+.gift-message-wrap {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
 .gift-message-wrap label {
   font-family: 'Jost', sans-serif;
   font-size: 0.75rem;
@@ -420,7 +479,27 @@ const proceedToPayment = () => {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   display: block;
-  margin-bottom: 0.4rem;
+}
+.gift-message-wrap textarea {
+  width: 100%;
+  min-height: 105px;
+  border: 1.5px solid #e0d5c0;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.92rem;
+  color: #1a1a1a;
+  background: #faf8f4;
+  outline: none;
+  resize: vertical;
+  line-height: 1.55;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+.gift-message-wrap textarea:focus {
+  border-color: #C9A84C;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
 }
 .proceed-payment-btn {
   width: 100%;

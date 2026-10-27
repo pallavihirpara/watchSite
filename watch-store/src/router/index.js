@@ -25,7 +25,23 @@ const router = createRouter({
       path: '/admin',
       name: 'admin',
       component: () => import('../views/AdminView.vue')
-    }
+    },
+    { path: '/terms', name: 'terms', component: () => import('../views/TermsView.vue') },
+    { path: '/terms-of-use', redirect: '/terms' },
+    { path: '/privacy', name: 'privacy', component: () => import('../views/PrivacyView.vue') },
+    { path: '/privacy-policy', redirect: '/privacy' },
+    { path: '/customer-care', name: 'customer-care', component: () => import('../views/CustomerCareView.vue') },
+    { path: '/track-order', redirect: '/customer-care?tab=track' },
+    { path: '/returns', redirect: '/customer-care?tab=returns' },
+    { path: '/care-guide', redirect: '/customer-care?tab=care' },
+    { path: '/store-locator', redirect: '/customer-care?tab=locator' },
+    { path: '/contact', redirect: '/customer-care?tab=contact' },
+    { path: '/about', name: 'about', component: () => import('../views/AboutView.vue') },
+    { path: '/craftsmen', redirect: '/about?section=craftsmen' },
+    { path: '/sustainability', redirect: '/about?section=sustainability' },
+    { path: '/press', redirect: '/about?section=press' },
+    { path: '/careers', redirect: '/about?section=careers' },
+    { path: '/blog', redirect: '/about?section=blog' }
   ],
   scrollBehavior() {
     return { top: 0, behavior: 'smooth' }

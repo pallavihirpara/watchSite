@@ -18,18 +18,29 @@ const saveLocalWishlist = (items) => {
 const getSavedCart = () => {
   try {
     const items = JSON.parse(localStorage.getItem('luxoria_cart') || '[]')
-    return Array.isArray(items) ? items.map(i => ({
-      ...i,
-      id: Number(i.id),
-      qty: Math.max(1, parseInt(i.qty, 10) || 1),
-      price: Number(i.price) || 0
-    })) : []
+    return Array.isArray(items) ? items.map(i => {
+      let price = Number(i.price) || 0
+      if (price <= 0) {
+        const prod = fallbackProducts.find(p => Number(p.id) === Number(i.id))
+        if (prod && Number(prod.price) > 0) price = Number(prod.price)
+      }
+      return {
+        ...i,
+        id: Number(i.id),
+        qty: Math.max(1, parseInt(i.qty, 10) || 1),
+        price: price
+      }
+    }) : []
   } catch { return [] }
 }
 
 const saveLocalCart = (items) => {
   try {
     localStorage.setItem('luxoria_cart', JSON.stringify(items))
+    const userId = getCurrentUserId()
+    if (userId) {
+      localStorage.setItem(`luxoria_cart_${userId}`, JSON.stringify(items))
+    }
   } catch (e) {
     console.error('Failed to save cart locally', e)
   }
@@ -50,7 +61,7 @@ const normalizeProduct = (p) => ({
   brand: p.brand || 'Radhe',
   category: p.category,
   type: p.type || 'Classic',
-  price: Number(p.price),
+  price: Number(p.price) || 0,
   originalPrice: p.original_price ? Number(p.original_price) : (p.originalPrice ? Number(p.originalPrice) : null),
   original_price: p.original_price ? Number(p.original_price) : (p.originalPrice ? Number(p.originalPrice) : null),
   discount: p.discount ? Number(p.discount) : 0,
@@ -77,7 +88,7 @@ export const store = reactive({
   wishlist: getSavedWishlist(),
   cartOpen: false,
   wishlistOpen: false,
-  hidePrice: true, // Price hidden temporarily as per user request (will set original price tomorrow)
+  hidePrice: false, // Active pricing enabled
   toastMessage: '',
   toastType: 'info', // 'success', 'info', 'error'
   toastTimer: null,
@@ -120,11 +131,68 @@ export const store = reactive({
     saveLocalCart(this.cart)
   },
 
+  // Assign local storage cart items to the logged in user
+  assignCartToUser(userId) {
+    if (!userId) return
+    // Ensure we have the latest cart items from localStorage if current is empty
+    if (!this.cart || this.cart.length === 0) {
+      this.cart = getSavedCart()
+    }
+    // Check if user had a previous user-specific cart saved in localStorage
+    try {
+      const userSpecific = JSON.parse(localStorage.getItem(`luxoria_cart_${userId}`) || '[]')
+      if (Array.isArray(userSpecific) && userSpecific.length > 0) {
+        for (const item of userSpecific) {
+          const exists = this.cart.find(c => Number(c.id) === Number(item.id))
+          if (!exists) {
+            this.cart.push({ ...item, user_id: userId })
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Could not merge user-specific cart:', e)
+    }
+
+    // Assign user_id to all cart items and repair any zero prices
+    this.cart = this.cart.map(item => {
+      let price = Number(item.price) || 0
+      if (price <= 0) {
+        const prod = fallbackProducts.find(p => Number(p.id) === Number(item.id))
+        if (prod && Number(prod.price) > 0) price = Number(prod.price)
+      }
+      return {
+        ...item,
+        price,
+        user_id: userId
+      }
+    })
+    saveLocalCart(this.cart)
+  },
+
+  clearCart() {
+    this.cart = []
+    saveLocalCart(this.cart)
+  },
+
   // Toggle wishlist / favorite (both frontend state and MySQL DB)
   async toggleWishlist(product) {
+    const userId = getCurrentUserId()
     const idx = this.wishlist.findIndex(i => (i.id === product.id || i.product_id === product.id))
     const wasWishlisted = idx > -1
-    const userId = getCurrentUserId()
+
+    if (!userId) {
+      // User is not logged in: show login popup / signup form
+      import('./auth').then(({ authStore }) => {
+        authStore.openAuthModal(
+          null,
+          'Please sign in or create an account to save your favorite watches',
+          product,
+          'login'
+        )
+      })
+      this.showToast('Please sign in to save favorites', 'info')
+      return
+    }
 
     if (wasWishlisted) {
       // Remove locally

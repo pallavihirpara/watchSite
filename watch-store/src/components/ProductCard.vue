@@ -106,6 +106,9 @@ const addToCart = () => {
   cursor: pointer;
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 .product-card:hover {
   transform: translateY(-6px);
@@ -117,6 +120,7 @@ const addToCart = () => {
   overflow: hidden;
   aspect-ratio: 1;
   background: #faf8f4;
+  flex-shrink: 0;
 }
 .product-img {
   width: 100%;
@@ -181,7 +185,12 @@ const addToCart = () => {
 .action-btn:hover { background: #fff; color: #C9A84C; transform: scale(1.1); }
 .wishlist-btn.active { color: #e74c3c; }
 .wishlist-btn.active:hover { color: #c0392b; }
-.card-body { padding: 1rem 1.1rem 1.25rem; }
+.card-body {
+  padding: 1rem 1.1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
 .product-brand {
   font-family: 'Jost', sans-serif;
   font-size: 0.72rem;
@@ -196,8 +205,15 @@ const addToCart = () => {
   font-size: 1.15rem;
   font-weight: 600;
   color: #1a1a1a;
-  margin: 0 0 0.5rem;
-  line-height: 1.3;
+  margin: 0 0 0.4rem;
+  line-height: 1.35;
+  min-height: 2.7em;
+  max-height: 2.7em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .product-rating {
   display: flex;
@@ -231,7 +247,9 @@ const addToCart = () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  margin-top: auto;
   margin-bottom: 0.9rem;
+  min-height: 32px;
 }
 .price-current {
   font-family: 'Jost', sans-serif;

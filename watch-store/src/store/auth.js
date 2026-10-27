@@ -18,7 +18,10 @@ const saveUsersDB = (users) => {
 export const authStore = reactive({
   currentUser: null,
   showAuthModal: false,
-  authRedirectTo: '/checkout',
+  authRedirectTo: null,
+  authSubtitle: '',
+  pendingFavorite: null,
+  initialMode: 'login',
 
   init() {
     try {
@@ -27,6 +30,8 @@ export const authStore = reactive({
         this.currentUser = JSON.parse(saved)
         // Read user's favorites from MySQL DB
         store.loadFavoritesFromDB(this.currentUser.id)
+        // Assign stored cart items to logged in user
+        store.assignCartToUser(this.currentUser.id)
       }
     } catch {
       this.currentUser = null
@@ -78,8 +83,11 @@ export const authStore = reactive({
       if (res.ok && data.success) {
         this.currentUser = data.user
         localStorage.setItem('luxoria_current_user', JSON.stringify(data.user))
+        // Assign current cart items to logged in user
+        store.assignCartToUser(data.user.id)
         // Load user favorites from DB and sync any items added as guest
         await store.syncLocalWishlistToDB(data.user.id)
+        await this.applyPendingFavorite()
         return { success: true, user: data.user }
       } else if (!res.ok && data.error) {
         return { success: false, error: data.error }
@@ -97,10 +105,12 @@ export const authStore = reactive({
     const { password: _p, ...safeUser } = user
     this.currentUser = safeUser
     localStorage.setItem('luxoria_current_user', JSON.stringify(safeUser))
+    store.assignCartToUser(safeUser.id)
+    await this.applyPendingFavorite()
     return { success: true, user: safeUser }
   },
 
-  // Register new user (saves into MySQL DB + auto-login + syncs favorites)
+  // Register new user (saves into MySQL DB + auto-login + syncs favorites + assigns cart)
   async register(data) {
     try {
       const res = await fetch('/api/auth/register', {
@@ -120,8 +130,11 @@ export const authStore = reactive({
       if (res.ok && respData.success) {
         this.currentUser = respData.user
         localStorage.setItem('luxoria_current_user', JSON.stringify(respData.user))
+        // Assign current cart items to newly registered user
+        store.assignCartToUser(respData.user.id)
         // Sync any favorites into the newly created user's DB account
         await store.syncLocalWishlistToDB(respData.user.id)
+        await this.applyPendingFavorite()
         return { success: true, user: respData.user }
       } else if (!res.ok && respData.error) {
         return { success: false, error: respData.error }
@@ -148,7 +161,17 @@ export const authStore = reactive({
     const { password: _p, ...safeUser } = newUser
     this.currentUser = safeUser
     localStorage.setItem('luxoria_current_user', JSON.stringify(safeUser))
+    store.assignCartToUser(safeUser.id)
+    await this.applyPendingFavorite()
     return { success: true, user: safeUser }
+  },
+
+  async applyPendingFavorite() {
+    if (this.pendingFavorite && this.currentUser?.id) {
+      const fav = this.pendingFavorite
+      this.pendingFavorite = null
+      await store.toggleWishlist(fav)
+    }
   },
 
   logout() {
@@ -159,12 +182,17 @@ export const authStore = reactive({
     localStorage.removeItem('luxoria_wishlist')
   },
 
-  openAuthModal(redirectTo = '/checkout') {
+  openAuthModal(redirectTo = null, subtitle = '', pendingFavorite = null, initialMode = 'login') {
     this.authRedirectTo = redirectTo
+    this.authSubtitle = subtitle
+    this.pendingFavorite = pendingFavorite
+    this.initialMode = initialMode
     this.showAuthModal = true
   },
 
   closeAuthModal() {
     this.showAuthModal = false
+    this.pendingFavorite = null
+    this.authSubtitle = ''
   }
 })

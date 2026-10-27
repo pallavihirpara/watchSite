@@ -271,7 +271,7 @@ const placeOrder = async () => {
   loading.value = true
   await new Promise(r => setTimeout(r, 2000)) // simulate payment
   orderId.value = Math.random().toString(36).substring(2, 8).toUpperCase()
-  store.cart.splice(0) // clear cart
+  store.clearCart() // clear cart state & localStorage
   sessionStorage.removeItem('luxoria_checkout')
   loading.value = false
   orderPlaced.value = true

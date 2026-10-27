@@ -67,11 +67,11 @@
         <div class="footer-col">
           <h4>Customer Care</h4>
           <ul>
-            <li><a href="#">Track My Order</a></li>
-            <li><a href="#">Returns & Exchange</a></li>
-            <li><a href="#">Watch Care Guide</a></li>
-            <li><a href="#">Store Locator</a></li>
-            <li><a href="#">Contact Us</a></li>
+            <li><router-link to="/customer-care?tab=track">Track My Order</router-link></li>
+            <li><router-link to="/customer-care?tab=policy">Purchase Policy</router-link></li>
+            <li><router-link to="/customer-care?tab=care">Watch Care Guide</router-link></li>
+            <li><router-link to="/customer-care?tab=locator">Store Locator</router-link></li>
+            <li><router-link to="/customer-care?tab=contact">Contact Us</router-link></li>
           </ul>
         </div>
 
@@ -79,12 +79,12 @@
         <div class="footer-col">
           <h4>Company</h4>
           <ul>
-            <li><a href="#">About Luxoria</a></li>
-            <li><a href="#">Our Craftsmen</a></li>
-            <li><a href="#">Sustainability</a></li>
-            <li><a href="#">Press & Media</a></li>
-            <li><a href="#">Careers</a></li>
-            <li><a href="#">Blog</a></li>
+            <li><router-link to="/about?section=story">About Radhe Timepieces</router-link></li>
+            <li><router-link to="/about?section=craftsmen">Our Craftsmen</router-link></li>
+            <li><router-link to="/about?section=sustainability">Sustainability</router-link></li>
+            <li><router-link to="/about?section=press">Press & Media</router-link></li>
+            <li><router-link to="/about?section=careers">Careers</router-link></li>
+            <li><router-link to="/about?section=blog">Blog / Journal</router-link></li>
           </ul>
         </div>
       </div>
@@ -94,9 +94,9 @@
     <div class="footer-bottom">
       <p>© {{ year }} Radhe Timepieces Pvt. Ltd. All rights reserved.</p>
       <div class="bottom-links">
-        <a href="#">Privacy Policy</a>
-        <a href="#">Terms of Use</a>
-        <a href="#">Cookie Settings</a>
+        <router-link to="/privacy">Privacy Policy</router-link>
+        <router-link to="/terms">Terms of Use</router-link>
+        <router-link to="/privacy#cookies">Cookie Settings</router-link>
       </div>
     </div>
   </footer>
