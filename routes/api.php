@@ -312,13 +312,6 @@ Route::post('/upload-image', function (Request $request) {
     }
     $file->move($publicUploads, $filename);
 
-    // Also mirror to watch-store/public/uploads so Vite dev server can serve immediately
-    $watchStoreUploads = base_path('watch-store/public/uploads');
-    if (!file_exists($watchStoreUploads)) {
-        @mkdir($watchStoreUploads, 0777, true);
-    }
-    @copy($publicUploads . DIRECTORY_SEPARATOR . $filename, $watchStoreUploads . DIRECTORY_SEPARATOR . $filename);
-
     return response()->json([
         'success' => true,
         'url' => '/uploads/' . $filename,
@@ -388,10 +381,6 @@ Route::post('/products', function (Request $request) {
         $publicUploads = public_path('uploads');
         if (!file_exists($publicUploads)) @mkdir($publicUploads, 0777, true);
         $file->move($publicUploads, $filename);
-
-        $watchStoreUploads = base_path('watch-store/public/uploads');
-        if (!file_exists($watchStoreUploads)) @mkdir($watchStoreUploads, 0777, true);
-        @copy($publicUploads . DIRECTORY_SEPARATOR . $filename, $watchStoreUploads . DIRECTORY_SEPARATOR . $filename);
 
         $imageUrl = '/uploads/' . $filename;
     }
@@ -465,10 +454,6 @@ Route::post('/products/{id}', function (Request $request, $id) {
         $publicUploads = public_path('uploads');
         if (!file_exists($publicUploads)) @mkdir($publicUploads, 0777, true);
         $file->move($publicUploads, $filename);
-
-        $watchStoreUploads = base_path('watch-store/public/uploads');
-        if (!file_exists($watchStoreUploads)) @mkdir($watchStoreUploads, 0777, true);
-        @copy($publicUploads . DIRECTORY_SEPARATOR . $filename, $watchStoreUploads . DIRECTORY_SEPARATOR . $filename);
 
         $data['image'] = '/uploads/' . $filename;
     }
