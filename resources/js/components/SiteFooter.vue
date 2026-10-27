@@ -301,7 +301,7 @@ const subscribe = () => {
 .bottom-links a {
   font-family: 'Jost', sans-serif;
   font-size: 0.8rem;
-  color: #4a4640;
+  color: #c9bcad;
   text-decoration: none;
   transition: color 0.2s;
 }
